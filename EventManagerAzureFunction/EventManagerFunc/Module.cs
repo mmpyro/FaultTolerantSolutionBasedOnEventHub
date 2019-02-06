@@ -1,5 +1,6 @@
 ﻿using AzureFunction.DI;
 using Common.Factories;
+using Common.Repositories;
 using CoreProcessor;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +12,7 @@ namespace EventManagerFunc
         {
             services.AddTransient<IRepositoryFactory, DocumentDbFactory>();
             services.AddTransient<IMessageProcessor, MessageProcessor>();
+            services.AddTransient<IPoisonMessageRepository, PoisonMessageRepository>();
         }
     }
 }

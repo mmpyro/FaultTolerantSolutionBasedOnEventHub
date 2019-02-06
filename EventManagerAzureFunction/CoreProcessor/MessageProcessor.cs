@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Common;
 using Common.Dtos;
 using Common.Factories;
+using Common.Repositories;
 using Common.Wrappers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace CoreProcessor
@@ -12,10 +14,15 @@ namespace CoreProcessor
     public class MessageProcessor : IMessageProcessor
     {
         private readonly IRepositoryFactory _repositoryFactory;
+        private readonly IPoisonMessageRepository _poisonMessageRepository;
+        private readonly ILogger _logger;
 
-        public MessageProcessor(IRepositoryFactory repositoryFactory)
+        public MessageProcessor(IRepositoryFactory repositoryFactory, IPoisonMessageRepository poisonMessageRepository,
+            ILogger logger)
         {
             _repositoryFactory = repositoryFactory;
+            _poisonMessageRepository = poisonMessageRepository;
+            _logger = logger;
         }
 
         public async Task ProcessAsync(IEnumerable<EventDataWrapper> messages)
@@ -27,11 +34,12 @@ namespace CoreProcessor
             foreach (var message in groupedMessages)
             {
                 var id = message.Key.ToString();
+                _logger?.LogDebug($"Process event for vehicle {id}");
                 var vehicleSnapshot = repository.Get(id) ?? new VehicleSnapshot { Id = id };
-    
+
                 message
-                    .Select(t => JsonConvert.DeserializeObject<SensorDto>(t.Body))
-                    .Where(t => t.Quality >= Constants.QualityGate)
+                    .Select(t => Deserialize(t))
+                    .Where(t => t != null && t.Quality >= Constants.QualityGate)
                     .ToList().ForEach(s =>
                     {
                         if(vehicleSnapshot.Sensors.ContainsKey(s.Name))
@@ -44,6 +52,20 @@ namespace CoreProcessor
                         }
                     });
                 await repository.AddAsync(vehicleSnapshot);
+                _logger?.LogInformation($"Save snapshot for vehicle {id}");
+            }
+        }
+
+        private SensorDto Deserialize(EventDataWrapper eventDataWrapper)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<SensorDto>(eventDataWrapper.Body);
+            }
+            catch(JsonException)
+            {
+                _poisonMessageRepository.Save(eventDataWrapper).Wait();
+                return null;
             }
         }
 

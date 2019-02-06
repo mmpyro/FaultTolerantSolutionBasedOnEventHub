@@ -3,9 +3,11 @@ using AzureFunction.DI;
 using Common;
 using Common.Dtos;
 using Common.Factories;
+using Common.Repositories;
 using Common.Wrappers;
 using CoreProcessor;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -19,31 +21,39 @@ namespace CoreProcessorIntegrationTests
     public class MessageProcessorSpec : IDisposable
     {
         private const string PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+        private const string StorageConnectionString = "UseDevelopmentStorage=true";
         private const string EndpointUrl = "https://localhost:8081";
         private readonly IContainer _container;
         private readonly Fixture _any = new Fixture();
         private readonly string _id = Guid.NewGuid().ToString();
         private readonly DocumentDBContext _dbContext;
+        private readonly TableContext _tableContext;
 
         public MessageProcessorSpec()
         {
             var configuration = Substitute.For<IConfigurationRoot>();
             configuration[Constants.DocumentDb.PrimaryKey].Returns(PrimaryKey);
             configuration[Constants.DocumentDb.EndpointUrl].Returns(EndpointUrl);
+            configuration[Constants.Storage.ConnectionString].Returns(StorageConnectionString);
 
             _container = new ContainerBuilder()
                 .AddTranscient<IRepositoryFactory, DocumentDbFactory>()
                 .AddTranscient<IMessageProcessor, MessageProcessor>()
+                .AddTranscient<IPoisonMessageRepository, PoisonMessageRepository>()
+                .AddInstance(Substitute.For<ILogger>())
                 .AddInstance(configuration)
                 .Build();
 
             _dbContext = new DocumentDBContext(new Uri(EndpointUrl), PrimaryKey,
                 Constants.DocumentDb.DatabaseId, Constants.DocumentDb.CollectionId);
+
+            _tableContext = new TableContext(StorageConnectionString, Constants.Storage.PoisonTableName);
         }
 
         public void Dispose()
         {
             _dbContext.Reset().Wait();
+            _tableContext.Reset<PoisonMessageEntity>().Wait();
         }
 
         [Fact]
@@ -144,6 +154,22 @@ namespace CoreProcessorIntegrationTests
             Assert.True(doc.Sensors.Keys.All(t => t == "fuelLevel" || t == "oilLevel"));
             Assert.Equal((decimal)90, doc.Sensors["fuelLevel"].Value);
             Assert.Equal((decimal)88.5, doc.Sensors["oilLevel"].Value);
+        }
+
+        [Fact]
+        public async Task ShouldSaveInavlidMessageIntoPoisonMessageTable()
+        {
+            //Given
+            var eventData = CreateEventData(_id);
+            eventData.Body.Returns(_any.Create<string>());
+            var messageProcessor = _container.Resolve<IMessageProcessor>();
+
+            //When
+            await messageProcessor.ProcessAsync(new[] { eventData });
+            var poisonMessages = await _tableContext.Get<PoisonMessageEntity>(_id);
+
+            //Then
+            Assert.True(poisonMessages.Any());
         }
 
         private EventDataWrapper CreateEventData(string id)

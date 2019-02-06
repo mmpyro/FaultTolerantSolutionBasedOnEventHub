@@ -5,6 +5,12 @@
         public const string VehicleId = "vehicleId";
         public const short QualityGate = 100;
 
+        public static class Storage
+        {
+            public const string ConnectionString = "storageConnectionString";
+            public const string PoisonTableName = "PoisonMessages";
+        }
+
         public static class DocumentDb
         {
             public const string DatabaseId = "Iot";

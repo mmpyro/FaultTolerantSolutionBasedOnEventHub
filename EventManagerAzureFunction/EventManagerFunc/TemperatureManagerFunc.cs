@@ -12,6 +12,9 @@ namespace EventManagerFunc
 {
     public static class TemperatureManagerFunc
     {
+        private static readonly IContainerBuilder _containerBuilder = new ContainerBuilder()
+            .AddModule(new EventManagerModule());
+
 
         [FunctionName("TemperatureManager")]
         public static void Run([EventHubTrigger("temperatures", Connection = "TemperatureHubConnectionString")] EventData[] messages,
@@ -23,8 +26,7 @@ namespace EventManagerFunc
                  .AddEnvironmentVariables()
                  .Build();
 
-            var container = new ContainerBuilder()
-                .AddModule(new EventManagerModule())
+            var container = _containerBuilder
                 .AddInstance(log)
                 .AddInstance(config)
                 .Build();
@@ -36,7 +38,7 @@ namespace EventManagerFunc
             }
             catch (Exception ex)
             {
-
+                log.LogError(ex, "Malfunction unable to process data.");
             }
         }
     }
