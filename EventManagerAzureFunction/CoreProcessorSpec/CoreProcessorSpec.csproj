@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreProcessor\CoreProcessor.csproj" />
     <ProjectReference Include="..\EventManagerFUnc\EventManagerFunc.csproj" />
+    <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

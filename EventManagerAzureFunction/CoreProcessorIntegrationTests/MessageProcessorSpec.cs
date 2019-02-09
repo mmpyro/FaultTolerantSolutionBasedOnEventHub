@@ -3,6 +3,7 @@ using AzureFunction.DI;
 using Common;
 using Common.Dtos;
 using Common.Factories;
+using Common.Policy;
 using Common.Repositories;
 using Common.Wrappers;
 using CoreProcessor;
@@ -40,6 +41,7 @@ namespace CoreProcessorIntegrationTests
                 .AddTranscient<IRepositoryFactory, DocumentDbFactory>()
                 .AddTranscient<IMessageProcessor, MessageProcessor>()
                 .AddTranscient<IPoisonMessageRepository, PoisonMessageRepository>()
+                .AddTranscient<IPolicyRegistry, PolicyRegistry>()
                 .AddInstance(Substitute.For<ILogger>())
                 .AddInstance(configuration)
                 .Build();
