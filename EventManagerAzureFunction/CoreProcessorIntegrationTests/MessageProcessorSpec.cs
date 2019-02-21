@@ -20,9 +20,11 @@ namespace CoreProcessorIntegrationTests
 {
     public class MessageProcessorSpec : IDisposable
     {
-        private const string PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+        private const string PrimaryKey = "";
         private const string StorageConnectionString = "UseDevelopmentStorage=true";
-        private const string EndpointUrl = "https://localhost:8081";
+        private const string EndpointUrl = "https://mmvehicle.documents.azure.com:443/";
+        private const string DatabaseId = "Iot";
+        private const string CollectionId = "integrationTests";
         private readonly IContainer _container;
         private readonly Fixture _any = new Fixture();
         private readonly string _id = Guid.NewGuid().ToString();
@@ -35,6 +37,8 @@ namespace CoreProcessorIntegrationTests
             configuration[Constants.DocumentDb.PrimaryKey].Returns(PrimaryKey);
             configuration[Constants.DocumentDb.EndpointUrl].Returns(EndpointUrl);
             configuration[Constants.Storage.ConnectionString].Returns(StorageConnectionString);
+            configuration[Constants.DocumentDb.DatabaseId].Returns(DatabaseId);
+            configuration[Constants.DocumentDb.CollectionId].Returns(CollectionId);
 
             _container = new ContainerBuilder()
                 .AddTranscient<IRepositoryFactory, DocumentDbFactory>()
@@ -45,7 +49,7 @@ namespace CoreProcessorIntegrationTests
                 .Build();
 
             _dbContext = new DocumentDBContext(new Uri(EndpointUrl), PrimaryKey,
-                Constants.DocumentDb.DatabaseId, Constants.DocumentDb.CollectionId);
+                DatabaseId, CollectionId);
 
             _tableContext = new TableContext(StorageConnectionString, Constants.Storage.PoisonTableName);
         }

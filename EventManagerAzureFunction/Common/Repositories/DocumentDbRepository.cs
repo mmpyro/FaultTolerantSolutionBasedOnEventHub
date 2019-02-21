@@ -4,31 +4,36 @@ using Microsoft.Azure.Documents.Client;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using static Common.Constants;
 
 namespace Common.Repositories
 {
     public class DocumentDbRepository : IRepository
     {
-        private DocumentClient _client;
+        private readonly DocumentClient _client;
+        private readonly DocumentDbConfig _config;
 
-        public DocumentDbRepository(Uri endpointUrl, string primaryKey)
+        public DocumentDbRepository(DocumentDbConfig config)
         {
-            _client = new DocumentClient(endpointUrl, primaryKey);
+            var policy = new ConnectionPolicy
+            {
+                EnableEndpointDiscovery = false
+            };
+            _client = new DocumentClient(config.EndpointUrl, config.PrimaryKey, policy);
+            _config = config;
         }
 
         public async Task AddAsync(VehicleSnapshot vehicleSnapshot)
         {
             await _client.CreateDatabaseIfNotExistsAsync(new Database
             {
-                Id = DocumentDb.DatabaseId
+                Id = _config.DatabaseId
             });
 
-            await _client.CreateDocumentCollectionIfNotExistsAsync(UriFactory.CreateDatabaseUri(DocumentDb.DatabaseId), new DocumentCollection
+            await _client.CreateDocumentCollectionIfNotExistsAsync(UriFactory.CreateDatabaseUri(_config.DatabaseId), new DocumentCollection
             {
-                Id = DocumentDb.CollectionId
+                Id = _config.CollectionId
             });
-            var documentUri = UriFactory.CreateDocumentCollectionUri(DocumentDb.DatabaseId, DocumentDb.CollectionId);
+            var documentUri = UriFactory.CreateDocumentCollectionUri(_config.DatabaseId, _config.CollectionId);
             await _client.UpsertDocumentAsync(documentUri, vehicleSnapshot);
         }
 
@@ -36,7 +41,7 @@ namespace Common.Repositories
         {
             try
             {
-                var documentUri = UriFactory.CreateDocumentCollectionUri(DocumentDb.DatabaseId, DocumentDb.CollectionId);
+                var documentUri = UriFactory.CreateDocumentCollectionUri(_config.DatabaseId, _config.CollectionId);
                 return _client.CreateDocumentQuery<VehicleSnapshot>(documentUri).AsEnumerable().FirstOrDefault(d => d.Id == id);
             }
             catch(AggregateException)
