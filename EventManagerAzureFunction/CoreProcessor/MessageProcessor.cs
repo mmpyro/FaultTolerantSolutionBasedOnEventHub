@@ -30,6 +30,7 @@ namespace CoreProcessor
 
         public async Task ProcessAsync(IEnumerable<EventDataWrapper> messages)
         {
+            var tab = messages.ToArray();
             var policies = _policyRegistry.CreateAsyncPolicies();
             var repository = _repositoryFactory.Create();
             var groupedMessages = messages.Where(t => t.Properties.ContainsKey(Constants.VehicleId))

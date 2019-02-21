@@ -13,8 +13,8 @@
 
         public static class DocumentDb
         {
-            public const string DatabaseId = "Iot";
-            public const string CollectionId = "vehicleSensors";
+            public const string DatabaseId = "databaseId";
+            public const string CollectionId = "collectionId";
             public const string EndpointUrl = "endpointUrl";
             public const string PrimaryKey = "primaryKey";
         }

@@ -1,6 +1,6 @@
-﻿using Common.Repositories;
+﻿using Common.Dtos;
+using Common.Repositories;
 using Microsoft.Extensions.Configuration;
-using System;
 
 namespace Common.Factories
 {
@@ -17,7 +17,9 @@ namespace Common.Factories
         {
             var endpointUrl = _configuration[Constants.DocumentDb.EndpointUrl];
             var primaryKey = _configuration[Constants.DocumentDb.PrimaryKey];
-            return new DocumentDbRepository(new Uri(endpointUrl), primaryKey);
+            var collectionId = _configuration[Constants.DocumentDb.CollectionId];
+            var dbId = _configuration[Constants.DocumentDb.DatabaseId];
+            return new DocumentDbRepository(new DocumentDbConfig(endpointUrl, primaryKey, collectionId, dbId));
         }
     }
 }

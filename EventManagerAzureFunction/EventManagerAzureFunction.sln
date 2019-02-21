@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "TestUtils\Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{89F77C1E-0FDC-410D-8866-1B5EBE8040E4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VehicleSimulator", "VehicleSimulator\VehicleSimulator.csproj", "{12391AE9-3FA6-4D94-856E-8062144CE995}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{89F77C1E-0FDC-410D-8866-1B5EBE8040E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89F77C1E-0FDC-410D-8866-1B5EBE8040E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89F77C1E-0FDC-410D-8866-1B5EBE8040E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12391AE9-3FA6-4D94-856E-8062144CE995}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12391AE9-3FA6-4D94-856E-8062144CE995}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12391AE9-3FA6-4D94-856E-8062144CE995}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12391AE9-3FA6-4D94-856E-8062144CE995}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

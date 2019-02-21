@@ -13,10 +13,6 @@ namespace Common.Wrappers
             Body = Encoding.UTF8.GetString(eventData.Body);
             Properties = eventData.Properties;
             SystemProperties = eventData.SystemProperties;
-            foreach(var key in eventData.SystemProperties.Keys)
-            {
-                SystemProperties.Add(key, eventData.SystemProperties[key]);
-            }
             EnqueueTimeUTC = eventData.SystemProperties.EnqueuedTimeUtc;
             Offset = eventData.SystemProperties.Offset;
             PartitionKey = eventData.SystemProperties.PartitionKey;

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -21,19 +19,7 @@ namespace TestUtils.Dal
         public async Task Reset<T>() where T : TableEntity, new()
         {
             var table = CreateTableReference();
-
-            var query = new TableQuery<T>();
-            var result = await table.ExecuteQuerySegmentedAsync(query, null);
-            if (result.Results.Any())
-            {
-                TableBatchOperation batchDeleteOperation = new TableBatchOperation();
-
-                foreach (var row in result)
-                {
-                    batchDeleteOperation.Delete(row);
-                }
-                await table.ExecuteBatchAsync(batchDeleteOperation);
-            }
+            await table.DeleteIfExistsAsync();
         }
 
         public async Task<T[]> Get<T>(string id) where T : TableEntity, new()

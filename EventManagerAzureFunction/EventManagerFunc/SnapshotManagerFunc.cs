@@ -10,14 +10,14 @@ using System.Linq;
 
 namespace EventManagerFunc
 {
-    public static class TemperatureManagerFunc
+    public static class SnapshotManagerFunc
     {
         private static readonly IContainerBuilder _containerBuilder = new ContainerBuilder()
             .AddModule(new EventManagerModule());
 
 
-        [FunctionName("TemperatureManager")]
-        public static void Run([EventHubTrigger("temperatures", Connection = "TemperatureHubConnectionString")] EventData[] messages,
+        [FunctionName("SnapshotManager")]
+        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "$Default")] EventData[] messages,
             ILogger log, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
@@ -34,7 +34,7 @@ namespace EventManagerFunc
             try
             {
                 var messageProcessor = container.Resolve<IMessageProcessor>();
-                messageProcessor.ProcessAsync(messages.Select(m => new EventDataWrapper(m)));
+                messageProcessor.ProcessAsync(messages.Select(m => new EventDataWrapper(m)).ToArray());
             }
             catch (Exception ex)
             {
