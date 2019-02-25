@@ -17,7 +17,7 @@ namespace EventManagerFunc
 
 
         [FunctionName("SnapshotManager")]
-        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "$Default")] EventData[] messages,
+        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "polly")] EventData[] messages,
             ILogger log, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
