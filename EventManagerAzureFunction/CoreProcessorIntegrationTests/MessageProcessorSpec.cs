@@ -20,11 +20,7 @@ namespace CoreProcessorIntegrationTests
 {
     public class MessageProcessorSpec : IDisposable
     {
-        private const string PrimaryKey = "";
-        private const string StorageConnectionString = "UseDevelopmentStorage=true";
-        private const string EndpointUrl = "https://mmvehicle.documents.azure.com:443/";
-        private const string DatabaseId = "Iot";
-        private const string CollectionId = "integrationTests";
+        private const string EnvironmentName = "ASPNETCORE_ENVIRONMENT";
         private readonly IContainer _container;
         private readonly Fixture _any = new Fixture();
         private readonly string _id = Guid.NewGuid().ToString();
@@ -33,12 +29,14 @@ namespace CoreProcessorIntegrationTests
 
         public MessageProcessorSpec()
         {
-            var configuration = Substitute.For<IConfigurationRoot>();
-            configuration[Constants.DocumentDb.PrimaryKey].Returns(PrimaryKey);
-            configuration[Constants.DocumentDb.EndpointUrl].Returns(EndpointUrl);
-            configuration[Constants.Storage.ConnectionString].Returns(StorageConnectionString);
-            configuration[Constants.DocumentDb.DatabaseId].Returns(DatabaseId);
-            configuration[Constants.DocumentDb.CollectionId].Returns(CollectionId);
+            Environment.SetEnvironmentVariable(EnvironmentName, "DEV");
+
+            var configuration = new ConfigurationBuilder()
+                 .SetBasePath(Environment.CurrentDirectory)
+                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                 .AddJsonFile($"local.settings.{Environment.GetEnvironmentVariable(EnvironmentName)}.json", optional: true, reloadOnChange: true)
+                 .AddEnvironmentVariables()
+                 .Build();
 
             _container = new ContainerBuilder()
                 .AddTranscient<IRepositoryFactory, DocumentDbFactory>()
@@ -48,10 +46,15 @@ namespace CoreProcessorIntegrationTests
                 .AddInstance(configuration)
                 .Build();
 
-            _dbContext = new DocumentDBContext(new Uri(EndpointUrl), PrimaryKey,
-                DatabaseId, CollectionId);
+            var endpointUrl = configuration["endpointUrl"];
+            var primaryKey = configuration["primaryKey"];
+            var storageConnectionString = configuration["poissonStorageConnectionString"];
+            var databaseId = configuration["databaseId"];
+            var collectionId = configuration["collectionId"];
+            _dbContext = new DocumentDBContext(new Uri(endpointUrl), primaryKey,
+                databaseId, collectionId);
 
-            _tableContext = new TableContext(StorageConnectionString, Constants.Storage.PoisonTableName);
+            _tableContext = new TableContext(storageConnectionString, Constants.Storage.PoisonTableName);
         }
 
         public void Dispose()

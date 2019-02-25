@@ -7,7 +7,7 @@
 
         public static class Storage
         {
-            public const string ConnectionString = "storageConnectionString";
+            public const string ConnectionString = "poissonStorageConnectionString";
             public const string PoisonTableName = "PoisonMessages";
         }
 

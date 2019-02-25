@@ -1,0 +1,10 @@
+{
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
+    "vehicleHubConnectionString": "",
+    "poissonStorageConnectionString": "",
+    "primaryKey": "",
+    "endpointUrl": "",
+    "databaseId": "Iot",
+    "collectionId": "integrationTests"
+}
