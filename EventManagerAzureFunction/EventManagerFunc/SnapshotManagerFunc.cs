@@ -16,7 +16,7 @@ namespace EventManagerFunc
             .AddModule(new EventManagerModule());
 
 
-        [FunctionName("SnapshotManager")]
+        [FunctionName("SnapshotManager-Polly")]
         public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "polly")] EventData[] messages,
             ILogger log, ExecutionContext context)
         {
