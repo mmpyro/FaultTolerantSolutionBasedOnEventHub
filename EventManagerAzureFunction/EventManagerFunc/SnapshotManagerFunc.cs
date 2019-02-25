@@ -16,8 +16,8 @@ namespace EventManagerFunc
             .AddModule(new EventManagerModule());
 
 
-        [FunctionName("SnapshotManager")]
-        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "$Default")] EventData[] messages,
+        [FunctionName("SnapshotManager-WithoutErrorHandling")]
+        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "without-error-hndling")] EventData[] messages,
             ILogger log, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
