@@ -96,7 +96,7 @@ namespace CoreProcessorSpec
         }
 
         [Fact]
-        public async Task ShouldRetryAddingDocumentToCollectionWhenExceptionOcur()
+        public async Task ShouldSaveVariableSnapshotWhenExceptionOccur()
         {
             //Given
             const int expectedNumberOfRetries = 3;
@@ -116,12 +116,13 @@ namespace CoreProcessorSpec
             });
 
             //When
-            var ex = await Assert.ThrowsAsync<DocumentClientException>(() => messageProcessor.ProcessAsync(new[]{
+            await messageProcessor.ProcessAsync(new[]{
                 eventData
-            }));
+            });
 
             //Then
             Assert.Equal(expectedNumberOfRetries, retry);
+            await _poisonMessageRepository.Received(1).Save(Arg.Any<VehicleSnapshot>(), Arg.Any<Exception>());
         }
     }
 }

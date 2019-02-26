@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
@@ -56,12 +57,24 @@ namespace CoreProcessor
                             vehicleSnapshot.Sensors.Add(s.Name, VehicleSensorData.Create(s));
                         }
                     });
+                await UpdateSnapshot(policies, repository, vehicleSnapshot);
+            };
+        }
+
+        private async Task UpdateSnapshot(Polly.IAsyncPolicy[] policies, IRepository repository,  VehicleSnapshot vehicleSnapshot)
+        {
+            try
+            {
                 await Polly.Policy.WrapAsync(policies).ExecuteAsync(async () =>
                 {
                     await repository.AddAsync(vehicleSnapshot);
-                    _logger?.LogInformation($"Save snapshot for vehicle {id}");
+                    _logger?.LogInformation($"Save snapshot for vehicle {vehicleSnapshot.Id}");
                 });
-            };
+            }
+            catch(Exception ex)
+            {
+                await _poisonMessageRepository.Save(vehicleSnapshot, ex);
+            }
         }
 
         private SensorDto Deserialize(EventDataWrapper eventDataWrapper)

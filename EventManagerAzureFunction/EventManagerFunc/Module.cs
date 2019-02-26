@@ -15,6 +15,7 @@ namespace EventManagerFunc
             services.AddTransient<IMessageProcessor, MessageProcessor>();
             services.AddTransient<IPoisonMessageRepository, PoisonMessageRepository>();
             services.AddTransient<IPolicyRegistry, PolicyRegistry>();
+            services.AddTransient<ISnapshotReprocessor, SnapshotReprocessor>();
         }
     }
 }

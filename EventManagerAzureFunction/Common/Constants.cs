@@ -9,6 +9,7 @@
         {
             public const string ConnectionString = "poissonStorageConnectionString";
             public const string PoisonTableName = "PoisonMessages";
+            public const string VariableSnapshotTableName = "FailedSnapshot";
         }
 
         public static class DocumentDb

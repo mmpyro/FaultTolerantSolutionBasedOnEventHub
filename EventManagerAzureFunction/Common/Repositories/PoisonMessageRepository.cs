@@ -44,5 +44,27 @@ namespace Common.Repositories
                 _logger?.LogError(ex, "Unable to save poison message into table");
             }
         }
+
+        public async Task Save(VehicleSnapshot vehicleSnapshot, Exception err)
+        {
+            try
+            {
+                var policies = _policyRegistry.CreateAsyncPolicies();
+                await Polly.Policy.WrapAsync(policies).ExecuteAsync(async () =>
+                {
+                    var storageAccount = CloudStorageAccount.Parse(_configuration[Constants.Storage.ConnectionString]);
+                    var tableClient = storageAccount.CreateCloudTableClient();
+                    var table = tableClient.GetTableReference(Constants.Storage.VariableSnapshotTableName);
+                    await table.CreateIfNotExistsAsync();
+
+                    var insertOperation = TableOperation.Insert(new VehicleSnapshotEntity(vehicleSnapshot, err));
+                    await table.ExecuteAsync(insertOperation);
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Unable to save poison message into table");
+            }
+        }
     }
 }
