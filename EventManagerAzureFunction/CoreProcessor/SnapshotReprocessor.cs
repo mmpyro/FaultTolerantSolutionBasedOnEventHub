@@ -1,9 +1,9 @@
 ﻿using Common;
 using Common.Dtos;
+using Common.Factories;
 using Common.Repositories;
 using Microsoft.Extensions.Configuration;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,50 +13,46 @@ namespace CoreProcessor
     public class SnapshotReprocessor : ISnapshotReprocessor
     {
         private readonly IConfigurationRoot _configuration;
-        private readonly IRepository _repository;
+        private readonly IRepositoryFactory _repositoryFactory;
+        private readonly IPoisonMessageRepository _poisonMessageRepository;
+        private readonly ILogger _logger;
 
-        public SnapshotReprocessor(IConfigurationRoot configuration, IRepository repository)
+        public SnapshotReprocessor(IConfigurationRoot configuration, IRepositoryFactory repositoryFactory,
+            IPoisonMessageRepository poisonMessageRepository, ILogger logger)
         {
             _configuration = configuration;
-            _repository = repository;
+            _repositoryFactory = repositoryFactory;
+            _poisonMessageRepository = poisonMessageRepository;
+            _logger = logger;
         }
 
         public async Task Reprocess()
         {
-            var storageAccount = CloudStorageAccount.Parse(_configuration[Constants.Storage.ConnectionString]);
-            var tableClient = storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Constants.Storage.VariableSnapshotTableName);
-
-            var query = new TableQuery<VehicleSnapshotEntity>
+            var snaphots = await _poisonMessageRepository.GetUnprocessedSnapshots();
+            foreach (var row in snaphots)
             {
-                TakeCount = 100
-            };
-
-            var segmentedTableQuery = await table.ExecuteQuerySegmentedAsync(query, null);
-            if (segmentedTableQuery.Results.Any())
-            {
-                foreach(var row in segmentedTableQuery.Results)
+                var snapshot = JsonConvert.DeserializeObject<VehicleSnapshot>(row.VehicleSnapshotJson);
+                var repository = _repositoryFactory.Create();
+                var vehicleSnapshot = repository.Get(snapshot.Id);
+                var sensors = snapshot?.Sensors?.Where(s => s.Value.Quality >= Constants.QualityGate);
+                foreach (var sensor in sensors)
                 {
-                    var snapshot = JsonConvert.DeserializeObject<VehicleSnapshot>(row.VehicleSnapshotJson);
-                    var vehicleSnapshot = _repository.Get(snapshot.Id);
-                    foreach (var sensor in snapshot.Sensors)
+                    if (vehicleSnapshot.Sensors.ContainsKey(sensor.Key))
                     {
-                        if (vehicleSnapshot.Sensors.ContainsKey(sensor.Key))
+                        var oldSensor = vehicleSnapshot.Sensors[sensor.Key];
+                        if (oldSensor.Timestamp < sensor.Value.Timestamp)
                         {
-                            var oldSensor = vehicleSnapshot.Sensors[sensor.Key];
-                            if (oldSensor.Timestamp < sensor.Value.Timestamp)
-                            {
-                                vehicleSnapshot.Sensors[sensor.Key] = sensor.Value;
-                            }
-                        }
-                        else
-                        {
-                            vehicleSnapshot.Sensors.Add(sensor.Key, sensor.Value);
+                            vehicleSnapshot.Sensors[sensor.Key] = sensor.Value;
                         }
                     }
-                    await _repository.AddAsync(vehicleSnapshot);
-                    await table.ExecuteAsync(TableOperation.Delete(row));
+                    else
+                    {
+                        vehicleSnapshot.Sensors.Add(sensor.Key, sensor.Value);
+                    }
                 }
+                await repository.AddAsync(vehicleSnapshot);
+                _logger?.LogInformation($"VehicleSnapshot saved for {vehicleSnapshot.Id} vehicleId.");
+                await _poisonMessageRepository.DeleteSnapshot(row);
             }
         }
     }
