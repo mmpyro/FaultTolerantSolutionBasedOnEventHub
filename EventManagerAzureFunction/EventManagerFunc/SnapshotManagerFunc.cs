@@ -1,4 +1,5 @@
 using AzureFunction.DI;
+using Common.CircutBreaker;
 using Common.Wrappers;
 using CoreProcessor;
 using Microsoft.Azure.EventHubs;
@@ -17,7 +18,7 @@ namespace EventManagerFunc
 
 
         [FunctionName("SnapshotManager-Polly")]
-        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "polly")] EventData[] messages,
+        public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "circut-breaker")] EventData[] messages,
             ILogger log, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
@@ -39,6 +40,8 @@ namespace EventManagerFunc
             catch (Exception ex)
             {
                 log.LogError(ex, "Malfunction unable to process data.");
+                var circutBreaker = container.Resolve<ICircutBreaker>();
+                circutBreaker.BreakFlow(exceptionsAllowed: 3, functionName: nameof(SnapshotManagerFunc));
             }
         }
     }

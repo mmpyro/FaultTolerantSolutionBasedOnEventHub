@@ -18,5 +18,17 @@
             public const string EndpointUrl = "endpointUrl";
             public const string PrimaryKey = "primaryKey";
         }
+
+        public static class Cache
+        {
+            public const string Endpoint = "redisCacheUrl";
+        }
+
+        public static class EventGrid
+        {
+            public const string Key = "eventGridSasKey";
+            public const string Topic = "eventGridTopic";
+            public const string Uri = "eventGridUri";
+        }
     }
 }

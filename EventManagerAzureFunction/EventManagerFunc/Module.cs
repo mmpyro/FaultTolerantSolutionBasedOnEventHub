@@ -1,4 +1,7 @@
 ﻿using AzureFunction.DI;
+using Common.CircutBreaker;
+using Common.Clients;
+using Common.Events;
 using Common.Factories;
 using Common.Policy;
 using Common.Repositories;
@@ -15,6 +18,10 @@ namespace EventManagerFunc
             services.AddTransient<IMessageProcessor, MessageProcessor>();
             services.AddTransient<IPoisonMessageRepository, PoisonMessageRepository>();
             services.AddTransient<IPolicyRegistry, PolicyRegistry>();
+            services.AddTransient<IHttpClient, HttpClient>();
+            services.AddTransient<IEventSender, EventGridSender>();
+            services.AddTransient<ICircutBreaker, CircutBreaker>();
+            services.AddSingleton<IStateProviderFactory, StateProviderFactory>();
         }
     }
 }

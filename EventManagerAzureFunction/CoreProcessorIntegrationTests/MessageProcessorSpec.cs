@@ -30,12 +30,10 @@ namespace CoreProcessorIntegrationTests
 
         public MessageProcessorSpec()
         {
-            Environment.SetEnvironmentVariable(EnvironmentName, "DEV");
-
             var configuration = new ConfigurationBuilder()
                  .SetBasePath(Environment.CurrentDirectory)
                  .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                 .AddJsonFile($"local.settings.{Environment.GetEnvironmentVariable(EnvironmentName)}.json", optional: true, reloadOnChange: true)
+                 .AddJsonFile($"local.settings.DEV.json", optional: true, reloadOnChange: true)
                  .AddEnvironmentVariables()
                  .Build();
 
