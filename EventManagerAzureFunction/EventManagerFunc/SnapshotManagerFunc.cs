@@ -17,7 +17,7 @@ namespace EventManagerFunc
             .AddModule(new EventManagerModule());
 
 
-        [FunctionName("SnapshotManager-Polly")]
+        [FunctionName("SnapshotManager-CircutBreaker")]
         public static void Run([EventHubTrigger("vehicles", Connection = "vehicleHubConnectionString", ConsumerGroup = "circut-breaker")] EventData[] messages,
             ILogger log, ExecutionContext context)
         {
