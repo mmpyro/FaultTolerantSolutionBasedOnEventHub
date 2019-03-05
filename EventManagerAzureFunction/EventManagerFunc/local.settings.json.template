@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "$(AZURE_STORAGE)",
+    "AzureWebJobsDashboard": "$(AZURE_STORAGE)",
+    "vehicleHubConnectionString": "$(VEHICLE_HUB_CONNECTION_STRING)",
+    "poissonStorageConnectionString": "$(POISSON_STORAGE_CONNECTION_STRING)",
+    "primaryKey": "$(PRIMARY_KEY)",
+    "endpointUrl": "$(ENDPOINT_URL)",
+    "databaseId": "$(DATABASE_NAME)",
+    "collectionId": "$(COLLECTION_ID)",
+    "redisCacheUrl": "$(REDIS_CACHE_URL)",
+    "eventGridSasKey": "$(EVENTGRID_SAS_KEY)",
+    "eventGridTopic": "$(EVENTGRID_TOPIC)",
+    "eventGridUri": "$(EVENT_GRID_URI)"
+  }
+}
